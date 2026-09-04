@@ -1,0 +1,970 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrainBattle | Interactive Quiz Arena</title><style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+
+:root{
+    --primary:#6c63ff;
+    --secondary:#00c6ff;
+    --dark:#111827;
+    --bg:#f5f7ff;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --success:#16a34a;
+    --danger:#ef4444;
+}
+
+body.dark{
+    --bg:#0b1020;
+    --card:#151c2e;
+    --text:#f1f5f9;
+    --muted:#94a3b8;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    transition:.3s;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 8%;
+    background:var(--card);
+    box-shadow:0 4px 20px rgba(0,0,0,.08);
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.logo{
+    font-size:25px;
+    font-weight:800;
+}
+
+.logo span{color:var(--primary)}
+
+.theme-btn{
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.container{
+    width:min(1100px,90%);
+    margin:auto;
+}
+
+/* HERO */
+
+.hero{
+    text-align:center;
+    padding:70px 0 40px;
+}
+
+.hero .brain{
+    font-size:80px;
+    animation:float 3s infinite ease-in-out;
+}
+
+@keyframes float{
+    50%{transform:translateY(-12px)}
+}
+
+.hero h1{
+    font-size:clamp(35px,6vw,65px);
+    margin:10px 0;
+}
+
+.hero h1 span{color:var(--primary)}
+
+.hero p{
+    color:var(--muted);
+    font-size:18px;
+}
+
+.btn{
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    padding:14px 25px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:600;
+    transition:.25s;
+}
+
+.btn:hover{transform:translateY(-3px);box-shadow:0 10px 25px rgba(108,99,255,.3)}
+
+.start-btn{margin-top:28px}
+
+/* STATS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin:25px 0 50px;
+}
+
+.stat{
+    background:var(--card);
+    padding:25px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
+}
+
+.stat h2{font-size:28px;color:var(--primary)}
+.stat p{color:var(--muted);font-size:14px}
+
+/* SETUP */
+
+.screen{display:none}
+.screen.active{display:block}
+
+.setup{
+    max-width:750px;
+    margin:20px auto 60px;
+    background:var(--card);
+    padding:30px;
+    border-radius:22px;
+    box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+.setup h2{text-align:center;margin-bottom:25px}
+
+.options{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:15px;
+}
+
+.option{
+    padding:18px;
+    border:2px solid #e5e7eb;
+    border-radius:14px;
+    text-align:center;
+    cursor:pointer;
+    transition:.25s;
+    color:var(--text);
+}
+
+.option:hover,.option.selected{
+    border-color:var(--primary);
+    background:rgba(108,99,255,.08);
+}
+
+/* QUIZ */
+
+.quiz-box{
+    max-width:800px;
+    margin:45px auto;
+    background:var(--card);
+    padding:30px;
+    border-radius:22px;
+    box-shadow:0 10px 35px rgba(0,0,0,.1);
+}
+
+.quiz-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:var(--muted);
+}
+
+.progress-wrap{
+    height:10px;
+    background:#e5e7eb;
+    border-radius:20px;
+    margin:18px 0;
+    overflow:hidden;
+}
+
+.progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--primary),var(--secondary));
+    transition:.4s;
+}
+
+.question{
+    font-size:25px;
+    margin:30px 0;
+}
+
+.answers{
+    display:grid;
+    gap:14px;
+}
+
+.answer{
+    text-align:left;
+    padding:16px;
+    border:2px solid #e5e7eb;
+    background:transparent;
+    color:var(--text);
+    border-radius:12px;
+    cursor:pointer;
+    font-size:16px;
+    transition:.2s;
+}
+
+.answer:hover{
+    border-color:var(--primary);
+}
+
+.answer.correct{
+    background:#dcfce7;
+    border-color:#16a34a;
+    color:#166534;
+}
+
+.answer.wrong{
+    background:#fee2e2;
+    border-color:#ef4444;
+    color:#991b1b;
+}
+
+.quiz-footer{
+    display:flex;
+    justify-content:space-between;
+    margin-top:25px;
+}
+
+/* RESULT */
+
+.result{
+    max-width:650px;
+    margin:50px auto;
+    text-align:center;
+    background:var(--card);
+    padding:40px;
+    border-radius:25px;
+    box-shadow:0 12px 40px rgba(0,0,0,.1);
+}
+
+.result .trophy{font-size:80px}
+
+.score-circle{
+    width:160px;
+    height:160px;
+    margin:25px auto;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:35px;
+    font-weight:bold;
+}
+
+.result p{color:var(--muted);margin:10px}
+
+/* DEVELOPER */
+
+.developer{
+    margin:50px 0 25px;
+    background:var(--card);
+    border-radius:22px;
+    padding:25px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    box-shadow:0 8px 25px rgba(0,0,0,.07);
+}
+
+.dev-img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid var(--primary);
+    background:#ddd;
+}
+
+.dev-info h3{font-size:22px}
+.dev-info p{color:var(--muted)}
+.dev-info span{color:var(--primary);font-weight:600}
+
+/* FOOTER */
+
+footer{
+    text-align:center;
+    padding:25px;
+    color:var(--muted);
+    border-top:1px solid #e5e7eb;
+}
+
+footer b{color:var(--primary)}
+
+@media(max-width:600px){
+    header{padding:15px 5%}
+    .stats{grid-template-columns:1fr}
+    .developer{flex-direction:column;text-align:center}
+    .quiz-top{font-size:13px}
+    .question{font-size:21px}
+}
+</style></head><body><header>
+    <div class="logo">🧠 Brain<span>Battle</span></div>
+    <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+</header><main class="container"><!-- HOME -->
+<section class="screen active" id="home">
+    <div class="hero">
+        <div class="brain">🧠⚡</div>
+        <h1>Challenge Your <span>Brain</span></h1>
+        <p>Test your knowledge. Beat the clock. Become the champion.</p>
+        <button class="btn start-btn" onclick="showSetup()">Start Battle 🚀</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat"><h2>4+</h2><p>Quiz Categories</p></div>
+        <div class="stat"><h2>⏱️</h2><p>Beat The Timer</p></div>
+        <div class="stat"><h2 id="highScore">0</h2><p>Your High Score</p></div>
+    </div>
+
+    <!-- DEVELOPER PROFILE -->
+    <div class="developer">
+        <!-- Put your image in same folder and name it usman.jpg -->
+        <img src="usman.jpg" class="dev-img"
+             onerror="this.style.display='none'">
+
+        <div class="dev-info">
+            <h3>💻 M. Usman Ali</h3>
+            <p>Creator & Web Developer</p>
+            <span>Designed and Developed BrainBattle</span>
+        </div>
+    </div>
+</section>
+
+
+<!-- SETUP -->
+<section class="screen" id="setup">
+
+    <div class="setup">
+
+        <h2>⚔️ Setup Your Battle</h2>
+
+        <h3>Choose Category</h3>
+        <div class="options" id="categories">
+            <div class="option selected" data-category="Science">🔬 Science</div>
+            <div class="option" data-category="Technology">💻 Technology</div>
+            <div class="option" data-category="Pakistan">🇵🇰 Pakistan</div>
+            <div class="option" data-category="General">🌍 General</div>
+        </div>
+
+        <br>
+
+        <h3>Choose Difficulty</h3>
+        <div class="options" id="difficulty">
+            <div class="option selected" data-difficulty="Easy">😊 Easy</div>
+            <div class="option" data-difficulty="Medium">😎 Medium</div>
+            <div class="option" data-difficulty="Hard">🔥 Hard</div>
+        </div>
+
+        <div style="text-align:center;margin-top:25px">
+            <button class="btn" onclick="startQuiz()">Start Quiz ⚡</button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- QUIZ -->
+<section class="screen" id="quiz">
+
+    <div class="quiz-box">
+
+        <div class="quiz-top">
+            <span id="questionCount">Question 1/5</span>
+            <span>⏱️ <b id="timer">15</b>s</span>
+            <span>Score: <b id="score">0</b></span>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="question" id="question"></div>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="quiz-footer">
+            <span id="categoryLabel"></span>
+            <button class="btn" id="nextBtn" onclick="nextQuestion()" style="display:none">
+                Next ➜
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- RESULT -->
+<section class="screen" id="result">
+
+    <div class="result">
+
+        <div class="trophy">🏆</div>
+
+        <h1>Battle Complete!</h1>
+
+        <div class="score-circle" id="finalScore">0/5</div>
+
+        <p id="resultMessage"></p>
+
+        <p>High Score: <b id="finalHighScore">0</b></p>
+
+        <button class="btn" onclick="restartQuiz()">Play Again 🔄</button>
+        <button class="btn" onclick="goHome()" style="background:#64748b">
+            Home 🏠
+        </button>
+
+    </div>
+
+</section>
+
+</main><footer>
+    © 2026 BrainBattle — Interactive Quiz Arena<br>
+    <b>Designed & Developed by 💻 M. Usman Ali</b>
+</footer><script>
+
+/* ================= QUESTIONS DATABASE ================= */
+
+const questions = {
+
+Science: [
+{
+q:"Which planet is known as the Red Planet?",
+a:["Earth","Mars","Jupiter","Venus"],
+correct:1
+},
+{
+q:"What gas do plants absorb from the atmosphere?",
+a:["Oxygen","Carbon Dioxide","Nitrogen","Hydrogen"],
+correct:1
+},
+{
+q:"What is the chemical symbol for Gold?",
+a:["Go","Gd","Au","Ag"],
+correct:2
+},
+{
+q:"How many bones are in an adult human body?",
+a:["206","300","150","250"],
+correct:0
+},
+{
+q:"What force pulls objects toward Earth?",
+a:["Magnetism","Gravity","Friction","Electricity"],
+correct:1
+}
+],
+
+Technology: [
+{
+q:"What does CPU stand for?",
+a:["Central Processing Unit","Computer Personal Unit","Central Program Utility","Control Processing User"],
+correct:0
+},
+{
+q:"Which language is used to structure web pages?",
+a:["Python","HTML","C++","Java"],
+correct:1
+},
+{
+q:"What does RAM stand for?",
+a:["Random Access Memory","Read Access Memory","Rapid Action Machine","Remote Access Module"],
+correct:0
+},
+{
+q:"Which company developed Windows?",
+a:["Apple","Google","Microsoft","IBM"],
+correct:2
+},
+{
+q:"What does AI stand for?",
+a:["Automatic Internet","Artificial Intelligence","Advanced Interface","Artificial Internet"],
+correct:1
+}
+],
+
+Pakistan: [
+{
+q:"What is the national language of Pakistan?",
+a:["Punjabi","Sindhi","Urdu","Pashto"],
+correct:2
+},
+{
+q:"Who was the founder of Pakistan?",
+a:["Allama Iqbal","Quaid-e-Azam Muhammad Ali Jinnah","Liaquat Ali Khan","Sir Syed Ahmed Khan"],
+correct:1
+},
+{
+q:"What is the capital of Pakistan?",
+a:["Karachi","Lahore","Islamabad","Peshawar"],
+correct:2
+},
+{
+q:"When did Pakistan gain independence?",
+a:["14 August 1947","23 March 1940","25 December 1947","14 August 1950"],
+correct:0
+},
+{
+q:"Which is the highest mountain in Pakistan?",
+a:["Nanga Parbat","K2","Rakaposhi","Tirich Mir"],
+correct:1
+}
+],
+
+General: [
+{
+q:"How many continents are there?",
+a:["5","6","7","8"],
+correct:2
+},
+{
+q:"Which is the largest ocean?",
+a:["Atlantic","Indian","Pacific","Arctic"],
+correct:2
+},
+{
+q:"How many days are in a leap year?",
+a:["365","366","364","360"],
+correct:1
+},
+{
+q:"What is the fastest land animal?",
+a:["Lion","Horse","Cheetah","Tiger"],
+correct:2
+},
+{
+q:"Which animal is known as the King of the Jungle?",
+a:["Tiger","Elephant","Lion","Wolf"],
+correct:2
+}
+]
+
+};
+
+
+/* ================= VARIABLES ================= */
+
+let selectedCategory = "Science";
+let selectedDifficulty = "Easy";
+let currentQuestion = 0;
+let score = 0;
+let time = 15;
+let timerInterval;
+let quizQuestions = [];
+
+
+/* ================= SCREEN ================= */
+
+function showScreen(id){
+
+    document.querySelectorAll(".screen").forEach(screen=>{
+        screen.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* ================= SETUP ================= */
+
+function showSetup(){
+    showScreen("setup");
+}
+
+
+document.querySelectorAll("#categories .option").forEach(option=>{
+
+    option.onclick = function(){
+
+        document.querySelectorAll("#categories .option")
+        .forEach(o=>o.classList.remove("selected"));
+
+        this.classList.add("selected");
+
+        selectedCategory =
+        this.dataset.category;
+
+    };
+
+});
+
+
+document.querySelectorAll("#difficulty .option").forEach(option=>{
+
+    option.onclick = function(){
+
+        document.querySelectorAll("#difficulty .option")
+        .forEach(o=>o.classList.remove("selected"));
+
+        this.classList.add("selected");
+
+        selectedDifficulty =
+        this.dataset.difficulty;
+
+    };
+
+});
+
+
+/* ================= START QUIZ ================= */
+
+function startQuiz(){
+
+    quizQuestions =
+    [...questions[selectedCategory]];
+
+    currentQuestion = 0;
+    score = 0;
+
+    showScreen("quiz");
+
+    loadQuestion();
+
+}
+
+
+/* ================= LOAD QUESTION ================= */
+
+function loadQuestion(){
+
+    clearInterval(timerInterval);
+
+    time =
+    selectedDifficulty === "Easy" ? 20 :
+    selectedDifficulty === "Medium" ? 15 : 10;
+
+
+    document.getElementById("timer").innerText =
+    time;
+
+
+    const q =
+    quizQuestions[currentQuestion];
+
+
+    document.getElementById("questionCount").innerText =
+    "Question " +
+    (currentQuestion + 1) +
+    "/" +
+    quizQuestions.length;
+
+
+    document.getElementById("score").innerText =
+    score;
+
+
+    document.getElementById("question").innerText =
+    q.q;
+
+
+    document.getElementById("categoryLabel").innerText =
+    "📚 " +
+    selectedCategory +
+    " • " +
+    selectedDifficulty;
+
+
+    document.getElementById("progress").style.width =
+    ((currentQuestion) / quizQuestions.length * 100) +
+    "%";
+
+
+    const answers =
+    document.getElementById("answers");
+
+    answers.innerHTML = "";
+
+
+    q.a.forEach((answer,index)=>{
+
+        const button =
+        document.createElement("button");
+
+        button.className =
+        "answer";
+
+        button.innerText =
+        String.fromCharCode(65 + index) +
+        ". " +
+        answer;
+
+
+        button.onclick =
+        ()=>selectAnswer(index,button);
+
+
+        answers.appendChild(button);
+
+    });
+
+
+    document.getElementById("nextBtn").style.display =
+    "none";
+
+
+    startTimer();
+
+}
+
+
+/* ================= TIMER ================= */
+
+function startTimer(){
+
+    timerInterval =
+    setInterval(()=>{
+
+        time--;
+
+        document.getElementById("timer").innerText =
+        time;
+
+
+        if(time <= 0){
+
+            clearInterval(timerInterval);
+
+            autoNext();
+
+        }
+
+    },1000);
+
+}
+
+
+/* ================= SELECT ANSWER ================= */
+
+function selectAnswer(index,button){
+
+    clearInterval(timerInterval);
+
+    const q =
+    quizQuestions[currentQuestion];
+
+    const buttons =
+    document.querySelectorAll(".answer");
+
+
+    buttons.forEach((btn,i)=>{
+
+        btn.disabled = true;
+
+        if(i === q.correct){
+
+            btn.classList.add("correct");
+
+        }
+
+    });
+
+
+    if(index === q.correct){
+
+        score++;
+
+        button.classList.add("correct");
+
+    }else{
+
+        button.classList.add("wrong");
+
+    }
+
+
+    document.getElementById("score").innerText =
+    score;
+
+
+    document.getElementById("nextBtn").style.display =
+    "block";
+
+}
+
+
+/* ================= AUTO NEXT ================= */
+
+function autoNext(){
+
+    const buttons =
+    document.querySelectorAll(".answer");
+
+
+    buttons.forEach(btn=>btn.disabled=true);
+
+
+    buttons[
+        quizQuestions[currentQuestion].correct
+    ].classList.add("correct");
+
+
+    setTimeout(nextQuestion,1200);
+
+}
+
+
+/* ================= NEXT QUESTION ================= */
+
+function nextQuestion(){
+
+    clearInterval(timerInterval);
+
+    currentQuestion++;
+
+
+    if(currentQuestion < quizQuestions.length){
+
+        loadQuestion();
+
+    }else{
+
+        showResult();
+
+    }
+
+}
+
+
+/* ================= RESULT ================= */
+
+function showResult(){
+
+    clearInterval(timerInterval);
+
+    document.getElementById("progress").style.width =
+    "100%";
+
+
+    const oldHigh =
+    Number(localStorage.getItem("brainbattleHighScore")) || 0;
+
+
+    const highScore =
+    Math.max(score,oldHigh);
+
+
+    localStorage.setItem(
+        "brainbattleHighScore",
+        highScore
+    );
+
+
+    document.getElementById("highScore").innerText =
+    highScore;
+
+
+    document.getElementById("finalScore").innerText =
+    score +
+    "/" +
+    quizQuestions.length;
+
+
+    document.getElementById("finalHighScore").innerText =
+    highScore;
+
+
+    const percentage =
+    score / quizQuestions.length * 100;
+
+
+    let message;
+
+
+    if(percentage === 100){
+
+        message =
+        "🔥 PERFECT! You are a true BrainBattle Champion!";
+
+    }else if(percentage >= 80){
+
+        message =
+        "🏆 Excellent! Your brain is powerful!";
+
+    }else if(percentage >= 60){
+
+        message =
+        "👏 Great Job! Keep learning and improving!";
+
+    }else{
+
+        message =
+        "💪 Keep practicing! Every champion starts somewhere.";
+
+    }
+
+
+    document.getElementById("resultMessage").innerText =
+    message;
+
+
+    showScreen("result");
+
+}
+
+
+/* ================= RESTART ================= */
+
+function restartQuiz(){
+
+    showSetup();
+
+}
+
+
+/* ================= HOME ================= */
+
+function goHome(){
+
+    showScreen("home");
+
+}
+
+
+/* ================= THEME ================= */
+
+function toggleTheme(){
+
+    document.body.classList.toggle("dark");
+
+}
+
+
+/* ================= HIGH SCORE ================= */
+
+document.getElementById("highScore").innerText =
+Number(
+    localStorage.getItem("brainbattleHighScore")
+) || 0;
+
+</script></body>
+</html>
